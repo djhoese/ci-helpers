@@ -271,7 +271,7 @@ fi
 if [[ ! -z $CONDA_DEPENDENCIES ]]; then
 
     if [[ -z $(echo $CONDA_DEPENDENCIES | grep '\bmkl\b') &&
-            $TRAVIS_OS_NAME != windows ]]; then
+            $TRAVIS_OS_NAME != windows && ! -z $NUMPY_VERSION ]]; then
         CONDA_DEPENDENCIES=${CONDA_DEPENDENCIES}" nomkl"
     fi
 
@@ -319,7 +319,7 @@ fi
 
 MKL='nomkl'
 if [[ ! -z $(echo $CONDA_DEPENDENCIES | grep '\bmkl\b') ||
-        $TRAVIS_OS_NAME == windows ]]; then
+        $TRAVIS_OS_NAME == windows || -z $NUMPY_VERSION ]]; then
     MKL=''
 fi
 
@@ -727,9 +727,8 @@ if [[ $SETUP_CMD == *coverage* ]]; then
     $PIP_INSTALL coveralls codecov
 fi
 
-if [[ $SETUP_CMD == *--cov* ]]; then
-    retry_on_known_error $CONDA_INSTALL pytest-cov
-    $PIP_INSTALL coveralls codecov
+if [[ $SETUP_CMD == *-cov* ]]; then
+    $PIP_INSTALL coveralls codecov pytest-cov
 fi
 
 
