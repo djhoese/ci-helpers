@@ -390,7 +390,10 @@ if [[ ! -z $CONDA_DEPENDENCIES ]]; then
     #
     # Use tee to print output to console and to file to avoid travis timing out
     _tmp_output_file="tmp.txt"
+    # do not exit on failure of the dry run because pip fallback may succeed
+    set +e
     conda install --dry-run $CONDA_DEPENDENCIES > >(tee $_tmp_output_file) 2>&1
+    set -e
     # 'grep' returns non-zero exit status if no lines match.
     if [[ ! -z $(grep "conflicts with explicit specs" $_tmp_output_file) ]]; then
         echo "restoring free channel"
@@ -403,9 +406,9 @@ if [[ ! -z $CONDA_DEPENDENCIES ]]; then
         if [[ ! -z $CONDA_CHANNEL_PRIORITY && $CONDA_CHANNEL_PRIORITY == strict ]]; then
             # If the channel priority is strict we should fail instead of silently
             # changing how the solve is done.
-            echo "cannot solve this environment with pinnings and strict channel priority"
-            rm -f $_tmp_output_file
-            exit 1
+            echo "WARNING: May not be able to solve this environment with pinnings and strict channel priority"
+            # Keep going, because retry_on_known_errors now checks for pinning
+            # problems and will trigger a pip fallback if they continue.
         fi
         # Add the free channel, which might fix this...
         conda config --set restore_free_channel true
@@ -413,14 +416,19 @@ if [[ ! -z $CONDA_DEPENDENCIES ]]; then
         # Try the dry run again, fail if pinnings are still ignored
         echo "Re-running with free channel restored"
 
+        # do not exit on failure of the dry run because pip fallback may succeed
+        set +e
         conda install --dry-run $CONDA_DEPENDENCIES > >(tee $_tmp_output_file) 2>&1
+        set -e
         if [[ ! -z $(grep "conflicts with explicit specs" $_tmp_output_file) ]]; then
             # No clue how to fix this, so just give up
-            echo "conda is ignoring pinnings, exiting"
-            rm -f $_tmp_output_file
-            exit 1
+            echo "WARNING: conda is ignoring pinnings"
+            # Actually, just continue. retry_on_known_errors now checks for
+            # pinning problems and will trigger a pip fallback if they continue.
         fi
     fi
+
+    # Clean up
     rm -f $_tmp_output_file
 fi
 
