@@ -34,7 +34,7 @@ for line in lines:
 
 new_args = ['conda', 'install']
 
-for arg in original_args[:2]:
+for arg in original_args[2:]:
     if arg in versions:
         # Add a version spec
         pkg_version = versions[arg]
