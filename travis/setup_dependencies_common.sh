@@ -247,7 +247,9 @@ fi
 
 
 # CONDA
-if [[ -z $CONDA_ENVIRONMENT ]]; then
+if [[ -n $CONDA_LOCK ]]; then
+    retry_on_known_error conda create $QUIET -n test --file $CONDA_LOCK
+elif [[ -z $CONDA_ENVIRONMENT ]]; then
     retry_on_known_error conda create $QUIET -n test $PYTHON_OPTION
 else
     retry_on_known_error conda env create $QUIET -n test -f $CONDA_ENVIRONMENT
