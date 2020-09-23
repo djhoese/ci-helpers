@@ -170,10 +170,12 @@ is_eq_float="=[0-9]+\.[0-9]+"
 
 if [[ $MAMBA == True ]]; then
     CONDA_INSTALL_COMMAND='mamba install';
-    MAMBA_INSTALL='mamba';
+    # mamba is not automatically linked like 'conda' so we need to install it
+    # in all new environments
+    MAMBA_DEPS='mamba';
 else
     CONDA_INSTALL_COMMAND='conda install';
-    MAMBA_INSTALL='';
+    MAMBA_DEPS='';
 fi
 
 if [[ -z $PIP_FALLBACK ]]; then
@@ -210,7 +212,7 @@ fi
 
 echo "conda ${CONDA_VERSION}" > $PIN_FILE_CONDA
 
-retry_on_known_error conda install $QUIET conda $MAMBA_INSTALL
+retry_on_known_error conda install $QUIET conda $MAMBA_DEPS
 
 if [[ -z $CONDA_CHANNEL_PRIORITY ]]; then
     CONDA_CHANNEL_PRIORITY=disabled
@@ -249,7 +251,7 @@ fi
 
 # CONDA
 if [[ -z $CONDA_ENVIRONMENT ]]; then
-    retry_on_known_error conda create $QUIET -n test $PYTHON_OPTION $MAMBA_INSTALL
+    retry_on_known_error conda create $QUIET -n test $PYTHON_OPTION $MAMBA_DEPS
 else
     retry_on_known_error conda env create $QUIET -n test -f $CONDA_ENVIRONMENT
 fi
