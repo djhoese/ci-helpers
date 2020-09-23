@@ -169,10 +169,11 @@ is_eq_number='=[0-9]'
 is_eq_float="=[0-9]+\.[0-9]+"
 
 if [[ $MAMBA == True ]]; then
-    conda install -c conda-forge mamba;
     CONDA_INSTALL_COMMAND='mamba install';
+    MAMBA_INSTALL='mamba';
 else
     CONDA_INSTALL_COMMAND='conda install';
+    MAMBA_INSTALL='';
 fi
 
 if [[ -z $PIP_FALLBACK ]]; then
@@ -197,7 +198,7 @@ fi
 # release to release. Add note here if version is pinned due to a bug upstream.
 if [[ -z $CONDA_VERSION ]]; then
     if [[ $MAMBA == True ]]; then
-        CONDA_VERSION=4.8.4
+        CONDA_VERSION=">=4.8"
     else
         CONDA_VERSION=4.7.11
     fi
@@ -209,7 +210,7 @@ fi
 
 echo "conda ${CONDA_VERSION}" > $PIN_FILE_CONDA
 
-retry_on_known_error conda install $QUIET conda
+retry_on_known_error conda install $QUIET conda $MAMBA_INSTALL
 
 if [[ -z $CONDA_CHANNEL_PRIORITY ]]; then
     CONDA_CHANNEL_PRIORITY=disabled
