@@ -249,7 +249,7 @@ fi
 
 # CONDA
 if [[ -z $CONDA_ENVIRONMENT ]]; then
-    retry_on_known_error conda create $QUIET -n test $PYTHON_OPTION
+    retry_on_known_error conda create $QUIET -n test $PYTHON_OPTION $MAMBA_INSTALL
 else
     retry_on_known_error conda env create $QUIET -n test -f $CONDA_ENVIRONMENT
 fi
